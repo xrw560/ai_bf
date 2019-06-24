@@ -1,0 +1,43 @@
+
+1.数据时代如何获取数据？
+    1.政府或者机构提供一些公开数据
+    2.企业用户产生的用户数据
+    3.数据平台购买
+    4.数据咨询服务公司
+    5.使用爬虫，手动抓取
+网页的三大特征
+    1.使用http或者https协议
+    2.都有url地址
+    3.返回的都是html源码
+爬取数据思路
+    1.使用python发送请求 打开网页
+    2.找到想要的数据，筛选保存
+    3.如果数据中有url，那么再次请求
+
+使用requests请求网页
+安装
+    pip install requests
+    conda install requests
+使用
+    import requests
+
+网页请求方法 get和post
+	get 正常打开网页的方式，如果传了参数，会直接在url地址栏中显示
+	post 请求中传的参数会被隐藏掉，可以传的参数更多
+
+使用BeautifulSoup解析得到的字符串
+安装
+    pip install beautifulsoup4
+    conda install beautifulsoup4
+
+使用
+    from bs4 import BeautifulSoup
+
+
+使用lxml解析得到的字符串
+安装
+    pip install lxml
+    conda install lxml
+使用
+    from lxml import etree  #默认使用这种方法引入
+    from lxml.html import etree #版本不同，如上面方法不行，使用下面的
