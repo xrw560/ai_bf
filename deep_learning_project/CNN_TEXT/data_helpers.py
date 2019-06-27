@@ -1,7 +1,5 @@
 import numpy as np
 import re
-import itertools
-from collections import Counter
 
 
 def clean_str(string):
@@ -31,21 +29,20 @@ def load_data_and_labels(positive_data_file, negative_data_file):
     Returns split sentences and labels.
     """
     # Load data from files
-    
-    
+
     positive = open(positive_data_file, "rb").read().decode('utf-8')
     negative = open(negative_data_file, "rb").read().decode('utf-8')
-    
+
     positive_examples = positive.split('\n')[:-1]
     negative_examples = negative.split('\n')[:-1]
-    
+
     positive_examples = [s.strip() for s in positive_examples]
     negative_examples = [s.strip() for s in negative_examples]
-    
-    #positive_examples = list(open(positive_data_file, "rb").read().decode('utf-8'))
-    #positive_examples = [s.strip() for s in positive_examples]
-    #negative_examples = list(open(negative_data_file, "rb").read().decode('utf-8'))
-    #negative_examples = [s.strip() for s in negative_examples]
+
+    # positive_examples = list(open(positive_data_file, "rb").read().decode('utf-8'))
+    # positive_examples = [s.strip() for s in positive_examples]
+    # negative_examples = list(open(negative_data_file, "rb").read().decode('utf-8'))
+    # negative_examples = [s.strip() for s in negative_examples]
     # Split by words
     x_text = positive_examples + negative_examples
     x_text = [clean_str(sent) for sent in x_text]
@@ -62,7 +59,7 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
     """
     data = np.array(data)
     data_size = len(data)
-    num_batches_per_epoch = int((len(data)-1)/batch_size) + 1
+    num_batches_per_epoch = int((len(data) - 1) / batch_size) + 1
     for epoch in range(num_epochs):
         # Shuffle the data at each epoch
         if shuffle:

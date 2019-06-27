@@ -52,3 +52,5 @@ events.out.*
 *.model
 household_power_*
 *.dot
+*.pyc
+*.png

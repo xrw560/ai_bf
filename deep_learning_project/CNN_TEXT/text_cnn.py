@@ -7,10 +7,9 @@ class TextCNN(object):
     A CNN for text classification.
     Uses an embedding layer, followed by a convolutional, max-pooling and softmax layer.
     """
-    def __init__(
-      self, sequence_length, num_classes, vocab_size,
-      embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0):
 
+    def __init__(self, sequence_length, num_classes, vocab_size,
+                 embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0):
         # Placeholders for input, output and dropout
         self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
         self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
@@ -21,9 +20,7 @@ class TextCNN(object):
 
         # Embedding layer
         with tf.device('/cpu:0'), tf.name_scope("embedding"):
-            self.W = tf.Variable(
-                tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0),
-                name="W")
+            self.W = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0), name="W")
             self.embedded_chars = tf.nn.embedding_lookup(self.W, self.input_x)
             self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
 
@@ -39,7 +36,7 @@ class TextCNN(object):
                     self.embedded_chars_expanded,
                     W,
                     strides=[1, 1, 1, 1],
-                    padding="VALID",
+                    padding="VALID",  # 已做好，此时不需要
                     name="conv")
                 # Apply nonlinearity
                 h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
@@ -54,7 +51,7 @@ class TextCNN(object):
 
         # Combine all the pooled features
         num_filters_total = num_filters * len(filter_sizes)
-        #self.h_pool = tf.concat(pooled_outputs, 3)
+        # self.h_pool = tf.concat(pooled_outputs, 3)
         self.h_pool = tf.concat(3, pooled_outputs)
         self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
 
