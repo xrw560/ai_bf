@@ -1,34 +1,31 @@
+#  Annotation
 
-class A:
-    def __init__(self):
-        self.y = 1234567
-
-    def glossory(self):
-        return 30
-
-    def f(self):
-        return 'abcde'
-
-    def gg(self):
-        return self.glossory() * self.y
+# AOP     Aspect-Oriented Programming
 
 
-class B(A):
-    def __init__(self, p):
-        print('p=' + p)
-        super(B, self).__init__()
+def m(f):
+    print('in m')
 
-    def h(self):
-        return 100
+    def ff(x, y):
+        print('call ff')
+        if x >= 10 or y >= 10:
+            raise Exception('Please do not add numbers that is equal to or great than 10.')
+        return f(x, y)
+    return ff
 
-    def glossory(self):
-        return -30
 
-    # def g(self):
-    #     print('in B.g()')
-    #     return 3000
+@m
+def my_func(a, b):
+    return a+b
+
+
+@m
+def x(p, q):
+    return 10
 
 
 if __name__ == '__main__':
-    b = B('123321')
-    print(b.gg())
+    # print(my_func(3, 4))
+    # print(my_func(5, 6))
+    # print(my_func(15, 6))
+    print(x(4, 5))

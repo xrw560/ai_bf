@@ -1,5 +1,6 @@
-
 class Exp:
+    """表达式"""
+
     def derivate(self):
         pass
 
@@ -93,12 +94,13 @@ class Div(Exp):
 if __name__ == '__main__':
     c1 = Constant(1234)
     c2 = Constant(5678)
-    e = Add(c1, c2)
-    # e = c1 - c2
+    # e = Add(c1, c2)
+    # e = c1 - c2  # 调用__add__
     x = X()
-    # e = Add(e, x)
+    # # e = Add(e, x)
     # e = Mul(c1, x)
     # e = Add(Mul(x, x), Mul(Constant(3), x))
     # e = Div(Constant(1.0), x)
-    e = (c1+c2)/x
+    e = (c1 + c2) / x
     print(e, e.derivate())
+    pass

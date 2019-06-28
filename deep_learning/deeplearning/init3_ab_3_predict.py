@@ -1,4 +1,5 @@
-from init3_ab_3 import Tensors
+# -*- conding:utf-8 -*-
+from init3_ab_3_train import Tensors
 import tensorflow as tf
 
 
@@ -14,16 +15,11 @@ def predict():
         print(X)
         print(Y)
         y_predict = ss.run(tensors.y_predict, feed_dict={
-                        tensors.x: X,
-                        # tensors.y: Y
-                    })
+            tensors.x: X,
+            # tensors.y: Y
+        })
         print(y_predict)
 
 
 if __name__ == '__main__':
-    # print(machine_learning())
-    # tensors = Tensors(lr=0.001)
-    # tensors.do_train()
-    # tensors.ss.close()
-
     predict()
