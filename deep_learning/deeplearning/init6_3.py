@@ -17,11 +17,11 @@ class Tensors:
         y_predict = tf.matmul(x, w) + b     # important !!!!
 
         # y_predict = tf.nn.relu(y_predict)
-        y_predict = tf.nn.leaky_relu(y_predict, alpha=0.3)
+        # y_predict = tf.nn.leaky_relu(y_predict, alpha=0.3)
         # y_predict = tf.nn.selu(y_predict)
         # y_predict = tf.nn.relu6(y_predict)
         # y_predict = tf.nn.crelu
-        # y_predict = tf.nn.elu(y_predict)
+        y_predict = tf.nn.elu(y_predict)
 
         y_predict = tf.nn.softmax(y_predict)
 

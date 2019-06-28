@@ -4,7 +4,7 @@ import math
 
 DIMS = 2
 R1 = DIMS ** 0.5
-R2 = (2**(1/DIMS)) * R1
+R2 = (2 ** (1 / DIMS)) * R1
 
 SAVE_PATH = 'model/init6_2/mymodel'
 
@@ -14,21 +14,22 @@ class Tensors:
         x = tf.placeholder(dtype=tf.float32, shape=[None, DIMS])
         w = tf.get_variable(name='w', shape=[DIMS, 3], initializer=tf.initializers.random_normal())
         b = tf.get_variable(name='b', shape=[3], initializer=tf.initializers.random_normal())
-        y_predict = tf.matmul(x, w) + b     # important !!!!
+        y_predict = tf.matmul(x, w) + b  # important !!!!
 
-        # y_predict = tf.nn.leaky_relu(y_predict, alpha=0.2)
-        # y_predict = tf.nn.softmax(y_predict)
+        y_predict = tf.nn.leaky_relu(y_predict, alpha=0.2)
+        y_predict = tf.nn.softmax(y_predict)
 
-        m = tf.reduce_min(y_predict, axis=1)
-        y_predict -= tf.reduce_min(m)
-        s = tf.reduce_sum(y_predict, axis=1) # ?
-        s = [s, s, s]  # 3 * ?
-        s = tf.transpose(s) # ? * 3
-        y_predict /= s
+        ### 线性
+        # m = tf.reduce_min(y_predict, axis=1)
+        # y_predict -= tf.reduce_min(m)
+        # s = tf.reduce_sum(y_predict, axis=1) # ?
+        # s = [s, s, s]  # 3 * ?
+        # s = tf.transpose(s) # ? * 3
+        # y_predict /= s
 
         y = tf.placeholder(dtype=tf.float32, shape=[None, 3])
 
-        loss = tf.reduce_sum(-y * tf.log(y_predict+0.00000001), axis=1)
+        loss = tf.reduce_sum(-y * tf.log(y_predict + 0.00000001), axis=1)
         loss = tf.reduce_mean(loss)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
@@ -62,7 +63,7 @@ def train():
         total = len(x)
 
         for i in range(5000):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x = x[j * batch_size: (j + 1) * batch_size]
                 _y = y[j * batch_size: (j + 1) * batch_size]
                 _, loss = ss.run([tensors.minimize, tensors.loss],
@@ -129,4 +130,3 @@ if __name__ == '__main__':
     # x, y = get_samples(100)
     # print(x)
     # print(y)
-

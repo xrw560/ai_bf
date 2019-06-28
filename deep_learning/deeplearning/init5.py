@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+"""
+三分类，输出为向量
+"""
 import tensorflow as tf
 import numpy as np
 
-
 DIMS = 5
 ALPHA = [0.83416808, 0.37521641, 0.27319377, 0.95008569, 0.2184194]
-BETA  = 0.21266653994274987
+BETA = 0.21266653994274987
 THRESHHOLD = 1.5972234398894183
 
 SAVE_PATH = 'model/init5/mymodel'
@@ -15,14 +18,14 @@ class Tensors:
         x = tf.placeholder(dtype=tf.float32, shape=[None, DIMS])
         w = tf.get_variable(name='w', shape=[DIMS, 3])
         b = tf.get_variable(name='b', shape=[3])
-        y_predict = tf.matmul(x, w) + b     # important !!!!
+        y_predict = tf.matmul(x, w) + b  # important !!!!
         y_predict = tf.nn.relu(y_predict)
         y_predict = tf.nn.softmax(y_predict)
 
-        y = tf.placeholder(dtype=tf.float32, shape=[None, 3])
+        y = tf.placeholder(dtype=tf.float32, shape=[None, 3])  # N x3
 
-        loss = tf.reduce_mean((y - y_predict)**2, axis=1)
-        loss = tf.reduce_mean(loss)
+        loss = tf.reduce_mean((y - y_predict) ** 2, axis=1)  # 按照第二维进行reduce_mean,得到每个样本的平均数
+        loss = tf.reduce_mean(loss)  # 得到所有样本的平均值
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
         minimize = optimizer.minimize(loss)
@@ -55,7 +58,7 @@ def train():
         total = len(x)
 
         for i in range(5000):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x = x[j * batch_size: (j + 1) * batch_size]
                 _y = y[j * batch_size: (j + 1) * batch_size]
                 _, loss = ss.run([tensors.minimize, tensors.loss],
@@ -99,11 +102,10 @@ def get_samples(num=5000):
     x = np.random.random([num, DIMS])
     result = np.matmul(x, ALPHA) + BETA
     y = [1 if e >= THRESHHOLD else -1 for e in result]
-    y = [[1., 0., 0.] if yi < 0 else ([0., 1., 0.] if xi[0]+xi[1] < 1.0 else [0., 0., 1.]) for yi, xi in zip(y, x)]
+    y = [[1., 0., 0.] if yi < 0 else ([0., 1., 0.] if xi[0] + xi[1] < 1.0 else [0., 0., 1.]) for yi, xi in zip(y, x)]
     return x, y
 
 
 if __name__ == '__main__':
     # train()
     predict()
-
