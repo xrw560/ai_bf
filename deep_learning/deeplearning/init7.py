@@ -3,10 +3,9 @@ import numpy as np
 import math
 import threading
 
-
 DIMS = 2
 R1 = DIMS ** 0.5
-R2 = (2**(1/DIMS)) * R1
+R2 = (2 ** (1 / DIMS)) * R1
 
 SAVE_PATH = 'model/init7/mymodel'
 
@@ -16,8 +15,10 @@ class Tensors:
         x = tf.placeholder(dtype=tf.float32, shape=[None, DIMS])
         w = tf.get_variable(name='w', shape=[DIMS, 3], initializer=tf.initializers.random_normal())
         b = tf.get_variable(name='b', shape=[3], initializer=tf.initializers.random_normal(), trainable=True)
+        # 训练中不需要对该变量进行自动变更
+        # 该变量不要定义为placeholder，否则无法在训练过程中动态更改
         lr = tf.get_variable(name='lr', shape=[], trainable=False)
-        y_predict = tf.matmul(x, w) + b     # important !!!!
+        y_predict = tf.matmul(x, w) + b  # important !!!!
 
         # y_predict = tf.nn.relu(y_predict)
         y_predict = tf.nn.leaky_relu(y_predict, alpha=0.3)
@@ -30,7 +31,7 @@ class Tensors:
 
         y = tf.placeholder(dtype=tf.float32, shape=[None, 3])
 
-        loss = tf.reduce_sum(-y * tf.log(y_predict+0.00000001), axis=1)
+        loss = tf.reduce_sum(-y * tf.log(y_predict + 0.00000001), axis=1)
         loss = tf.reduce_mean(loss)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
@@ -82,14 +83,14 @@ class Init:
 
         tensors = self.tensors
         for i in range(epoches):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x = x[j * batch_size: (j + 1) * batch_size]
                 _y = y[j * batch_size: (j + 1) * batch_size]
                 _, loss = session.run([tensors.minimize, tensors.loss],
-                                 feed_dict={
-                                     tensors.x: _x,
-                                     tensors.y: _y
-                                 })
+                                      feed_dict={
+                                          tensors.x: _x,
+                                          tensors.y: _y
+                                      })
                 if loss < 0.4:
                     session.run(self.assign, feed_dict={self.lr: 0.0005})
 
@@ -145,7 +146,7 @@ def get_samples(num=5000):
     return x, y
 
 
-class MyThread (threading.Thread):
+class MyThread(threading.Thread):
     def __init__(self):
         super(MyThread, self).__init__()
 

@@ -3,10 +3,9 @@ import numpy as np
 import math
 import threading
 
-
 DIMS = 2
 R1 = DIMS ** 0.5
-R2 = (2**(1/DIMS)) * R1
+R2 = (2 ** (1 / DIMS)) * R1
 
 SAVE_PATH = 'model/init7_3/mymodel'
 
@@ -38,7 +37,7 @@ class Tensors:
 
         y = tf.placeholder(dtype=tf.float32, shape=[None, 3])
 
-        loss = tf.reduce_sum(-y * tf.log(y_predict+0.00000001), axis=1)
+        loss = tf.reduce_sum(-y * tf.log(y_predict + 0.00000001), axis=1)
         loss = tf.reduce_mean(loss)
 
         lr = tf.get_variable(name='lr', shape=[], trainable=False)
@@ -89,14 +88,14 @@ class Init:
 
         tensors = self.tensors
         for i in range(epoches):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x = x[j * batch_size: (j + 1) * batch_size]
                 _y = y[j * batch_size: (j + 1) * batch_size]
                 _, loss = session.run([tensors.minimize, tensors.loss],
-                                 feed_dict={
-                                     tensors.x: _x,
-                                     tensors.y: _y
-                                 })
+                                      feed_dict={
+                                          tensors.x: _x,
+                                          tensors.y: _y
+                                      })
                 if loss < 0.4:
                     lr = 0.0001
                 else:
@@ -155,7 +154,7 @@ def get_samples(num=5000):
     return x, y
 
 
-class MyThread (threading.Thread):
+class MyThread(threading.Thread):
     def __init__(self):
         super(MyThread, self).__init__()
 

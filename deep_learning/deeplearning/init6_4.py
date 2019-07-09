@@ -4,7 +4,7 @@ import math
 
 DIMS = 2
 R1 = DIMS ** 0.5
-R2 = (2**(1/DIMS)) * R1
+R2 = (2 ** (1 / DIMS)) * R1
 
 SAVE_PATH = 'model/init6_4/mymodel'
 
@@ -14,7 +14,7 @@ class Tensors:
         x = tf.placeholder(dtype=tf.float32, shape=[None, DIMS])
         w = tf.get_variable(name='w', shape=[DIMS, 3], initializer=tf.initializers.random_normal())
         b = tf.get_variable(name='b', shape=[3], initializer=tf.initializers.random_normal())
-        y_predict = tf.matmul(x, w) + b     # important !!!!
+        y_predict = tf.matmul(x, w) + b  # important !!!!
 
         # y_predict = tf.nn.relu(y_predict)
         y_predict = tf.nn.leaky_relu(y_predict, alpha=0.3)
@@ -27,7 +27,7 @@ class Tensors:
 
         y = tf.placeholder(dtype=tf.float32, shape=[None, 3])
 
-        loss = tf.reduce_sum(-y * tf.log(y_predict+0.00000001), axis=1)
+        loss = tf.reduce_sum(-y * tf.log(y_predict + 0.00000001), axis=1)
         loss = tf.reduce_mean(loss)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
@@ -45,6 +45,9 @@ class Tensors:
 
 class Init:
     def __init__(self):
+        """train与predict均使用
+            共用session
+        """
         self.graph = tf.Graph()
         with self.graph.as_default():
             self.tensors = Tensors(lr=0.001)
@@ -52,7 +55,7 @@ class Init:
             self.session.run(tf.global_variables_initializer())
             try:
                 self.saver = tf.train.Saver()
-                self.saver.restore(self.session, SAVE_PATH)
+                self.saver.restore(self.session, SAVE_PATH)  # 将硬盘上有可能存在的模型加载进来
                 print('restore model success!')
             except:
                 print('use a new model!!!')
@@ -65,14 +68,14 @@ class Init:
 
         tensors = self.tensors
         for i in range(epoches):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x = x[j * batch_size: (j + 1) * batch_size]
                 _y = y[j * batch_size: (j + 1) * batch_size]
                 _, loss = session.run([tensors.minimize, tensors.loss],
-                                 feed_dict={
-                                     tensors.x: _x,
-                                     tensors.y: _y
-                                 })
+                                      feed_dict={
+                                          tensors.x: _x,
+                                          tensors.y: _y
+                                      })
             if i % 100 == 0:
                 print('%d: loss = %s' % (i, loss))
 
@@ -135,9 +138,3 @@ if __name__ == '__main__':
     init2 = Init()
     init2.predict()
     init2.close()
-
-
-    # x, y = get_samples(100)
-    # print(x)
-    # print(y)
-

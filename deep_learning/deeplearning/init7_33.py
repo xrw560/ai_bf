@@ -1,13 +1,11 @@
 import tensorflow as tf
 import numpy as np
-import math
 import threading
-
 from PIL import Image, ImageDraw
 
 SIZE = 12
 
-SAVE_PATH = 'model/init11/mymodel'
+SAVE_PATH = 'model/init7_33/mymodel'
 
 
 def _my_fc(input, output_neurals, name):
@@ -20,31 +18,24 @@ def _my_fc(input, output_neurals, name):
                         shape=[output_neurals]
                         )
     input = tf.matmul(input, w) + b
-
+    # return tf.nn.relu(input)
     return input
 
 
 class Tensors:
     def __init__(self):
-        x = tf.placeholder(dtype=tf.float32, shape=[None, SIZE, SIZE])
+        x = tf.placeholder(dtype=tf.float32, shape=[None, SIZE, SIZE])  # shape=[None,高，宽]
         self.x = x
-        x = tf.reshape(x, shape=[-1, SIZE, SIZE, 1])
-        """只改变通道数，不改变大小"""
-        t = x
-        x = tf.layers.conv2d(x, 4, (3, 3), (1, 1), padding='same')
-        x = tf.layers.conv2d(x, 10, (3, 3), (1, 1), padding='same')
-        x = tf.layers.conv2d(x, 16, (3, 3), (1, 1), padding='same')
-        x = tf.concat([t, x], axis=3)  # 合并,最后一个维度(通道)
+        x = tf.reshape(x, shape=[-1, SIZE, SIZE, 1])  # nhwc
+        x = tf.layers.conv2d(x, 16, (3, 3), padding='same')  # 12x12x1 => 12x12x16
+        x = tf.layers.max_pooling2d(x, (2, 2), (2, 2), padding='same')  # 12x12x16 => 6x6x16
+        x = tf.layers.conv2d(x, 32, (3, 3), padding='same')  # 6x6x16 => 6x6x32
+        x = tf.layers.max_pooling2d(x, (2, 2), (2, 2), padding='same')  # => 3 x 3 x 32
 
-        x = tf.layers.max_pooling2d(x, (2, 2), (2, 2), padding='same')
-        x = tf.layers.conv2d(x, 32, (3, 3), padding='same')
-        x = tf.layers.max_pooling2d(x, (2, 2), (2, 2), padding='same')
-
-        # keep_prob=tf.placeholder(tf.float32)
-        # x=tf.nn.dropout(x,keep_prob)
-
-        x = tf.reshape(x, [-1, 3 * 3 * 32])
-        x = _my_fc(x, 3, 'fc')
+        # keep_prob = tf.placeholder(tf.float32)
+        # x = tf.layers.dropout(x,keep_prob)
+        x = tf.reshape(x, [-1, 3 * 3 * 32])  # 把矩阵变成向量
+        x = _my_fc(x, 3, 'fc')  # 全连接
 
         y_predict = tf.nn.softmax(x)
 
@@ -53,7 +44,7 @@ class Tensors:
         loss = tf.reduce_sum(-y * tf.log(y_predict + 0.00000001), axis=1)
         loss = tf.reduce_mean(loss)
 
-        tf.summary.scalar('my_loss2', loss)
+        tf.summary.scalar("my_loss", loss)
 
         lr = tf.get_variable(name='lr', shape=[], trainable=False)
         optimizer = tf.train.AdamOptimizer(learning_rate=lr)
@@ -63,9 +54,8 @@ class Tensors:
         self.y_predict = y_predict
         self.minimize = minimize
         self.loss = loss
-
         self.lr = lr
-        self.summary = tf.summary.merge_all()
+        self.summary = tf.summary.merge_all()  # 把所有绘图元素汇总
 
 
 class Init:
@@ -78,7 +68,7 @@ class Init:
 
             self.lr = tf.placeholder(tf.float32)
             self.assign = tf.assign(self.tensors.lr, self.lr)
-            self.session.run(self.assign, feed_dict={self.lr: 0.001})  # lr初始化
+            self.session.run(self.assign, feed_dict={self.lr: 0.001})
 
             try:
                 self.saver = tf.train.Saver()
@@ -102,7 +92,8 @@ class Init:
         total = len(x)
 
         tensors = self.tensors
-        file_writer = tf.summary.FileWriter('log11', graph=self.graph)
+
+        file_writer = tf.summary.FileWriter('log', graph=self.graph)
         step = 0
         for i in range(epoches):
             for j in range(int(total / batch_size)):
@@ -114,10 +105,9 @@ class Init:
                                                    tensors.y: _y
                                                })
                 step += 1
-
                 file_writer.add_summary(summary, step)
                 if loss < 0.4:
-                    lr = 0.0005
+                    lr = 0.0001
                 else:
                     lr = 0.001
                 session.run(self.assign, feed_dict={self.lr: lr})
@@ -150,17 +140,6 @@ class Init:
         print('total = %s, error = %s' % (total, error))
 
 
-def get_samples(num=5000):
-    x, y = [], []
-    for _ in range(num):
-        xi, yi = get_sample()
-        xi = [[e / 255.0 for e in row] for row in xi]
-
-        x.append(xi)
-        y.append(yi)
-    return x, y
-
-
 class MyThread(threading.Thread):
     def __init__(self):
         super(MyThread, self).__init__()
@@ -170,34 +149,42 @@ class MyThread(threading.Thread):
             init.predict()
 
 
+def get_samples(num=5000):
+    x, y = [], []
+    for _ in range(num):
+        xi, yi = get_sample()
+        xi = [[e / 255.0 for e in row] for row in xi]
+        x.append(xi)
+        y.append(yi)
+    return x, y
+
+
 def get_sample():
-    img = Image.new('L', (SIZE, SIZE), 0)
+    img = Image.new("L", (SIZE, SIZE), 0)
     draw = ImageDraw.Draw(img)
 
     x = np.random.randint(0, int(SIZE / 2))
     y = np.random.randint(0, int(SIZE / 2))
     dx = np.random.randint(int(SIZE / 2), SIZE - x)
     dy = np.random.randint(int(SIZE / 2), SIZE - y)
-    p = np.random.random()
 
-    if p < 0.333333:
+    p = np.random.random()
+    if p < 0.3333:
         draw.ellipse((x, y, x + dx, y + dy), outline=255)
         y = [1., 0., 0.]
-
-    elif p < 0.666666:
+    elif p < 0.6666:
         draw.line((x, y, x + dx, y + dy), fill=255)
         y = [0., 1., 0.]
-
     else:
         draw.rectangle((x, y, x + dx, y + dy), outline=255)
         y = [0., 0., 1.]
 
     ary = np.array(img)
-
     return ary, y
+    # img.show()
 
 
-def do_test():
+def test():
     with Init() as init:
         init.train(5000)
 
@@ -213,7 +200,13 @@ def do_test():
     print('main thread is finished.')
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    # for s in get_samples(10)[0]:
+    #     print("-" * 200)
+    #     for row in s:
+    #         for e in row:
+    #             print(" " if e == 0.0 else 'o', end='')
+    #         print()
     init = Init()
-    init.train(400)
+    init.train(epoches=400)
     init.predict()

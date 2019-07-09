@@ -28,20 +28,20 @@ class Tensors:
         x = tf.placeholder(dtype=tf.float32, shape=[None, SIZE, SIZE])
         self.x = x
         x = tf.reshape(x, shape=[-1, SIZE, SIZE, 1])
-        x = tf.layers.conv2d(x, 16, (3,3), padding='same') # 12*12*1 => 12 * 12 * 16
+        x = tf.layers.conv2d(x, 16, (3, 3), padding='same')  # 12*12*1 => 12 * 12 * 16
         x = tf.layers.max_pooling2d(x, (2, 2), (2, 2), padding='same')  # => 6 * 6 * 16
-        x = tf.layers.conv2d(x, 32, (3,3), padding='same')  # => 6 * 6 * 32
+        x = tf.layers.conv2d(x, 32, (3, 3), padding='same')  # => 6 * 6 * 32
         x = tf.layers.max_pooling2d(x, (2, 2), (2, 2), padding='same')  # => 3 * 3 * 32
         # keep_prob = tf.placeholder(tf.float32)
         # x = tf.nn.dropout(x, keep_prob)
-        x = tf.reshape(x, [-1, 3*3*32])
+        x = tf.reshape(x, [-1, 3 * 3 * 32])
         x = _my_fc(x, 3, 'fc')
 
         y_predict = tf.nn.softmax(x)
 
         y = tf.placeholder(dtype=tf.float32, shape=[None, 3])
 
-        loss = tf.reduce_sum(-y * tf.log(y_predict+0.00000001), axis=1)
+        loss = tf.reduce_sum(-y * tf.log(y_predict + 0.00000001), axis=1)
         loss = tf.reduce_mean(loss)
 
         tf.summary.scalar('my_loss2', loss)
@@ -95,7 +95,7 @@ class Init:
         file_writer = tf.summary.FileWriter('log2', graph=self.graph)
         step = 0
         for i in range(epoches):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x = x[j * batch_size: (j + 1) * batch_size]
                 _y = y[j * batch_size: (j + 1) * batch_size]
                 _, loss, summary = session.run([tensors.minimize, tensors.loss, tensors.summary],
@@ -153,7 +153,7 @@ def get_samples(num=5000):
     return x, y
 
 
-class MyThread (threading.Thread):
+class MyThread(threading.Thread):
     def __init__(self):
         super(MyThread, self).__init__()
 
@@ -168,18 +168,18 @@ def get_sample():
 
     x = np.random.randint(0, int(SIZE / 2))
     y = np.random.randint(0, int(SIZE / 2))
-    dx = np.random.randint(int(SIZE/2), SIZE - x)
-    dy = np.random.randint(int(SIZE/2), SIZE - y)
+    dx = np.random.randint(int(SIZE / 2), SIZE - x)
+    dy = np.random.randint(int(SIZE / 2), SIZE - y)
 
     p = np.random.random()
     if p < 0.333333:
-        draw.ellipse((x, y, x+dx, y+dy), outline=255)
+        draw.ellipse((x, y, x + dx, y + dy), outline=255)
         y = [1., 0., 0.]
     elif p < 0.666666:
-        draw.line((x, y, x+dx, y+dy), fill=255)
+        draw.line((x, y, x + dx, y + dy), fill=255)
         y = [0., 1., 0.]
     else:
-        draw.rectangle((x, y, x+dx, y+dy), outline=255)
+        draw.rectangle((x, y, x + dx, y + dy), outline=255)
         y = [0., 0., 1.]
     ary = np.array(img)
 
