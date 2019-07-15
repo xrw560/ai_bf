@@ -1,3 +1,4 @@
+"""ResNet"""
 import tensorflow as tf
 import numpy as np
 import math
@@ -28,13 +29,13 @@ class Tensors:
     def __init__(self):
         x = tf.placeholder(dtype=tf.float32, shape=[None, SIZE, SIZE])
         self.x = x
-        x = tf.reshape(x, shape=[-1, SIZE, SIZE, 1])
+        x = tf.reshape(x, shape=[-1, SIZE, SIZE, 1])  # ?*12*12*1
         """只改变通道数，不改变大小"""
         t = x
         x = tf.layers.conv2d(x, 4, (3, 3), (1, 1), padding='same')
         x = tf.layers.conv2d(x, 10, (3, 3), (1, 1), padding='same')
-        x = tf.layers.conv2d(x, 16, (3, 3), (1, 1), padding='same')
-        x = tf.concat([t, x], axis=3)  # 合并,最后一个维度(通道)
+        x = tf.layers.conv2d(x, 16, (3, 3), (1, 1), padding='same')  # ?*12*12*16
+        x = tf.concat([t, x], axis=3)  # ?*12*12*17 合并,最后一个维度(通道)
 
         x = tf.layers.max_pooling2d(x, (2, 2), (2, 2), padding='same')
         x = tf.layers.conv2d(x, 32, (3, 3), padding='same')
@@ -154,7 +155,7 @@ def get_samples(num=5000):
     x, y = [], []
     for _ in range(num):
         xi, yi = get_sample()
-        xi = [[e / 255.0 for e in row] for row in xi]
+        xi = [[e / 255.0 for e in row] for row in xi]  # 标准化，容易收敛
 
         x.append(xi)
         y.append(yi)

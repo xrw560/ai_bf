@@ -1,12 +1,13 @@
-# coding=utf8
+# -*- conding:utf-8 -*-
 
 
 VOCAB_SIZE = 8200
 
 
 def chinese_to_index(text):
+    """汉字->编码下标（汉字分类）"""
     result = []
-    bs = text.encode('gb2312')
+    bs = text.encode('gb2312')  # 每个汉字占两个字节(区码(94),位码)
     num = len(bs)
     i = 0
     while i < num:
@@ -16,16 +17,17 @@ def chinese_to_index(text):
         else:
             b = b - 160
             if b >= 16:
-                b -= 6
+                b -= 6  # 区号为10~15的区为空
             b -= 1
             i += 1
             b2 = bs[i] - 160 - 1
-            result.append(161 + b * 94 + b2)
+            result.append(161 + b * 94 + b2)  # 汉字区码从161开始
         i += 1
     return result
 
 
 def index_to_chinese(index_list):
+    """根据下标转换为汉字"""
     result = ''
     for index in index_list:
         if index < 161:
@@ -43,7 +45,7 @@ def index_to_chinese(index_list):
 
 def read_poems(path='qts_7X4.txt'):
     result = []
-    error= 0
+    error = 0
     with open(path, encoding='gb18030') as f:
         while True:
             poem = f.readline()
@@ -57,11 +59,10 @@ def read_poems(path='qts_7X4.txt'):
                 poem = ''.join(segs)
                 index = chinese_to_index(poem)
                 result.append(index)
-            except:
+            except:  # 由于编码问题会出现一些错误，忽略这些诗
                 # print(poem)
                 error += 1
                 continue
-            result.append(index)
     print('Get %d poems, found %d errors.' % (len(result), error), flush=True)
     return result
 

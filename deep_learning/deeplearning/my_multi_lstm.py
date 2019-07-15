@@ -1,4 +1,7 @@
-import tensorflow as tf
+# -*- conding:utf-8 -*-
+"""
+双层LSTM
+"""
 
 
 class MyMultiLSTM:
@@ -12,7 +15,7 @@ class MyMultiLSTM:
             output, state = lstm(x, output, state)
             result_outputs.append(output)
             result_states.append(state)
-            x = output
+            x = output  # 输出是下一层的输入
         return result_outputs, result_states
 
     def zero_state(self, batch_size):
@@ -26,4 +29,3 @@ class MyMultiLSTM:
         for lstm in self.lstm_list:
             result.append(lstm.zero_output(batch_size))
         return result
-
