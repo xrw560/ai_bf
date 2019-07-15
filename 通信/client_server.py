@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
+import socket  # 导入 socket 模块
 
-import socket
+s = socket.socket()  # 创建 socket 对象
+host = socket.gethostname()  # 获取本地主机名
+port = 12345  # 设置端口
+s.bind((host, port))  # 绑定端口
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(("127.0.0.1",10001))
-server.listen(50)
+s.listen(5)  # 等待客户端连接
 while True:
-    data,addr = server.accept()
-    info = b'OK'
-    while True:
-        buffer = data.recv(2)
-        if buffer == b'':
-            info = b'Bad request'
-            break
-    data.send(info)
-    data.close()
+    c, addr = s.accept()  # 建立客户端连接
+    print('连接地址：', addr)
 
-
+    c.send(b'hello world')
+    c.close()  # 关闭连接
