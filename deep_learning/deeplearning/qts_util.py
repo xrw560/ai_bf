@@ -56,6 +56,7 @@ def read_poems(path='qts_7X4.txt'):
                 segs = [seg[:-2] + '.' for seg in segs]
                 poem = ''.join(segs)
                 index = chinese_to_index(poem)
+                result.append(index)
             except:
                 # print(poem)
                 error += 1

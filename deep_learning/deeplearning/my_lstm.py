@@ -19,7 +19,7 @@ class MyLSTM:
         self.output_size = output_size
         self.state_size = state_size
         self._reuse = None
-        self._scope_name = "AaKie3845_%d" % MyLSTM.scope_index
+        self._scope_name = "AaKie3845_%d" % MyLSTM.scope_index  # 每个LSTM的name是唯一的
         MyLSTM.scope_index += 1
 
     def zero_state(self, batch_size):
@@ -69,9 +69,3 @@ def _my_fc(input, output_neurals, name):
     input = tf.matmul(input, w) + b
 
     return input
-
-
-if __name__ == '__main__':
-    lstm = MyLSTM()
-    result = lstm(12, 34, 567)
-    print(result)

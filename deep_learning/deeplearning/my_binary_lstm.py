@@ -1,3 +1,7 @@
+# -*- conding:utf-8 -*-
+"""
+双向LSTM
+"""
 import tensorflow as tf
 
 
@@ -34,9 +38,10 @@ class MyBinaryLSTM:
         output2 = self.lstm2.zero_output(batch_size)
 
         predict1_s, predict2_s = [], []
+
         for i in range(self.num_steps):
             input1 = inputs[i]
-            input2 = inputs[self.num_steps-1-i]
+            input2 = inputs[self.num_steps - 1 - i]
             output1, state1 = self.lstm1(input1, output1, state1)
             output2, state2 = self.lstm2(input2, output2, state2)
             predict1_s.append(output1)
@@ -44,8 +49,8 @@ class MyBinaryLSTM:
 
         predicts = []
         for predict1, predict2, i in zip(predict1_s, predict2_s, range(num_steps)):
-            predict = tf.concat([predict1, predict2], axis=-1)
-            predict = _my_fc(predict, self.lstm1.output_size, name='fc_%d' % i)
+            predict = tf.concat([predict1, predict2], axis=1)
+            predict = _my_fc(predict, self.lstm1.output_size, name="fc_%d" % i)
             predicts.append(predict)
 
         self.inputs = inputs
