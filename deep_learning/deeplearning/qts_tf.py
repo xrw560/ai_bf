@@ -1,13 +1,7 @@
+# -*- conding:utf-8 -*-
 import tensorflow as tf
 import numpy as np
-import math
-import threading
-
-from PIL import Image,ImageDraw
-from my_lstm import MyLSTM
-from my_multi_lstm import MyMultiLSTM
 from qts_util import read_poems, VOCAB_SIZE
-
 
 STATE_SIZE = 200
 OUTPUT_SIZE = 200
@@ -41,7 +35,6 @@ class Tensors:
         ])
 
         state = multi_lstm.zero_state(batch_size, tf.float32)
-        self.init_state = state
 
         inputs, outputs, todays = [], [], []
 
@@ -79,7 +72,7 @@ class Tensors:
         self.loss = loss
 
         self.lr = lr
-        self.summary=tf.summary.merge_all()
+        self.summary = tf.summary.merge_all()
 
 
 class Init:
@@ -117,36 +110,29 @@ class Init:
         total = samples.num
 
         tensors = self.tensors
-        file_writer=tf.summary.FileWriter('logqts_tf',graph=self.graph)
-        step=0
+        file_writer = tf.summary.FileWriter('logqts_tf', graph=self.graph)
+        step = 0
         for i in range(epoches):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x, _y = samples.get_samples(batch_size)
                 feed_dict = {}
-                temp = np.transpose(_x)   # _x.shape = [batch_size, 32]
+                temp = np.transpose(_x)  # _x.shape = [batch_size, 32]
                 for x_input, x_value in zip(tensors.x_inputs, temp):
                     feed_dict[x_input] = [e for e in x_value]
                 temp = np.transpose(_y)
                 for y_today, y_value in zip(tensors.y_todays, temp):
                     feed_dict[y_today] = [e for e in y_value]
-                _, loss,summary = session.run([tensors.minimize, tensors.loss,tensors.summary],
-                                              feed_dict=feed_dict)
-                step+=1
+                _, loss, summary = session.run([tensors.minimize, tensors.loss, tensors.summary],
+                                               feed_dict=feed_dict)
+                step += 1
 
-                file_writer.add_summary(summary,step)
-                # if loss < 0.4:
-                #     lr = 0.0001
-                # else:
-                #     lr = 0.001
-                # session.run(self.assign, feed_dict={self.lr: lr})
-
-            # if i % 100 == 0:
+                file_writer.add_summary(summary, step)
                 print('%d: loss = %s, lr = %s' % (i, loss, session.run(tensors.lr)))
 
         self.saver.save(session, SAVE_PATH)
 
     def predict(self):
-        x, y = get_samples(6000)
+        x, y = get_samples()
         x, y = x[5000:], y[5000:]
 
         tensors = self.tensors
@@ -163,9 +149,9 @@ class Init:
         for xi, yi, yi_predict in zip(x, y, y_predict):
             error += abs(yi - yi_predict)
             total += yi
-            print(' yi = %s, yi_predict = %s, error = %s' % (yi, yi_predict, error/total))
+            print(' yi = %s, yi_predict = %s, error = %s' % (yi, yi_predict, error / total))
 
-        print('total = %s, error = %s' % (total, error/total))
+        print('total = %s, error = %s' % (total, error / total))
 
 
 def get_samples():
@@ -203,36 +189,11 @@ class Samples:
         return x, y
 
 
-class MyThread (threading.Thread):
-    def __init__(self):
-        super(MyThread, self).__init__()
-
-    def run(self):
-        with Init() as init:
-            init.predict()
-
-
-def do_test():
-    with Init() as init:
-        init.train(5000)
-
-    th = []
-    for _ in range(1):
-        t = MyThread()
-        th.append(t)
-        t.start()
-
-    for t in th:
-        t.join()
-
-    print('main thread is finished.')
-
-
 if __name__ == '__main__':
     # samples = get_samples()
     # print(samples[:10])
 
-    init=Init(100)
+    init = Init(100)
     init.train(10)
     # init=Init(994)
     # init.predict()

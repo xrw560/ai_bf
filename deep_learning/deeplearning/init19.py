@@ -1,13 +1,11 @@
+# -*- coding:utf-8 -*-
+"""
+Atention模型
+"""
 import tensorflow as tf
 import numpy as np
-import math
-import threading
-
-from PIL import Image,ImageDraw
 from my_lstm import MyLSTM
-from my_multi_lstm import MyMultiLSTM
-from qts_util import read_poems, VOCAB_SIZE, chinese_to_index, index_to_chinese
-
+from qts_util import read_poems, VOCAB_SIZE
 
 STATE_SIZE = 200
 OUTPUT_SIZE = 200
@@ -50,16 +48,16 @@ class Tensors:
                 input = tf.placeholder(dtype=tf.int32, shape=[None])
                 inputs.append(input)
                 input = word2vector(input, name='word2vector')
-                output, state = encoder(input, output, state)
+                output, state = encoder(input, output, state)  # 50*200
                 os.append(output)
                 tf.get_variable_scope().reuse_variables()
 
-        os = tf.transpose(os, [1, 0, 2])
-        v = tf.get_variable('attention', [INPUT_SIZE, OUTPUT_REPEATS])
-        att = tf.matmul(os, [v] * batch_size)
+        os = tf.transpose(os, [1, 0, 2])  # 50*32*200
+        v = tf.get_variable('attention', [INPUT_SIZE, OUTPUT_REPEATS])  # 200*32
+        att = tf.matmul(os, [v] * batch_size)  # 50*32*32
         p = tf.nn.softmax(att, axis=1)
-        i_s = tf.matmul(tf.transpose(p, [0, 2, 1]), os)
-        i_s = tf.split(i_s, OUTPUT_REPEATS, axis=1)
+        i_s = tf.matmul(tf.transpose(p, [0, 2, 1]), os)  # 50*32*200
+        i_s = tf.split(i_s, OUTPUT_REPEATS, axis=1)  # 32个 (50*1*200)
 
         with tf.variable_scope('decoder'):
             output = decoder.zero_output(batch_size)
@@ -67,7 +65,7 @@ class Tensors:
             for i in range(OUTPUT_REPEATS):
                 today = tf.placeholder(dtype=tf.int32, shape=[None])
                 todays.append(today)
-                i_in = tf.reshape(i_s[i], [batch_size, -1])
+                i_in = tf.reshape(i_s[i], [batch_size, -1])  # 50*200
                 output, state = decoder(i_in, output, state)
                 outputs.append(output)
 
@@ -100,7 +98,7 @@ class Tensors:
         self.loss = loss
 
         self.lr = lr
-        self.summary=tf.summary.merge_all()
+        self.summary = tf.summary.merge_all()
 
 
 class Init:
@@ -120,7 +118,7 @@ class Init:
                 self.saver = tf.train.Saver()
                 self.saver.restore(self.session, SAVE_PATH)
                 print('restore model success!')
-            except:
+            except Exception as e:
                 print('use a new model!!!')
 
     def __enter__(self):
@@ -138,13 +136,13 @@ class Init:
         total = samples.num
 
         tensors = self.tensors
-        file_writer=tf.summary.FileWriter('log19',graph=self.graph)
-        step=0
+        file_writer = tf.summary.FileWriter('log19', graph=self.graph)
+        step = 0
         for i in range(epoches):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x, _y = samples.get_samples(batch_size)
                 feed_dict = {}
-                temp = np.transpose(_x)   # _x.shape = [batch_size, 32]
+                temp = np.transpose(_x)  # _x.shape = [batch_size, 32]
                 for x_input, x_value in zip(tensors.x_inputs, temp):
                     feed_dict[x_input] = [e for e in x_value]
                     # if len(x_value) != 100:
@@ -155,12 +153,12 @@ class Init:
                 temp = np.transpose(_y)
                 for y_today, y_value in zip(tensors.y_todays, temp):
                     feed_dict[y_today] = [e for e in y_value]
-                _, loss,summary = session.run([tensors.minimize, tensors.loss,tensors.summary],
-                                              feed_dict=feed_dict)
+                _, loss, summary = session.run([tensors.minimize, tensors.loss, tensors.summary],
+                                               feed_dict=feed_dict)
                 # session.run(self.assign, feed_dict={self.lr: 0.0001})
-                step+=1
+                step += 1
 
-                file_writer.add_summary(summary,step)
+                file_writer.add_summary(summary, step)
                 # if loss < 0.4:
                 #     lr = 0.0001
                 # else:
@@ -174,20 +172,6 @@ class Init:
 
         self.saver.save(session, SAVE_PATH)
         print('Finish!', flush=True)
-
-    def predict(self, first_index):
-        result = [first_index]
-        tensors = self.tensors
-        feed_dict = {
-            tensors.x_inputs[0]: [first_index] * self.batch_size
-        }
-
-        for i in range(1, REPEATS):
-            predicts = self.session.run(tensors.y_predict[i-1], feed_dict)
-            result.append(predicts[0])
-            feed_dict[tensors.x_inputs[i]] = predicts
-
-        return result
 
 
 def get_samples():
@@ -224,40 +208,6 @@ class Samples:
         return x, y
 
 
-class MyThread (threading.Thread):
-    def __init__(self):
-        super(MyThread, self).__init__()
-
-    def run(self):
-        with Init() as init:
-            init.predict()
-
-
-def do_test():
-    with Init() as init:
-        init.train(5000)
-
-    th = []
-    for _ in range(1):
-        t = MyThread()
-        th.append(t)
-        t.start()
-
-    for t in th:
-        t.join()
-
-    print('main thread is finished.')
-
-
 if __name__ == '__main__':
-    # samples = get_samples()
-    # print(samples[:10])
-
-    init=Init(50)
-    # first = chinese_to_index('海')[0]
-    # result = init.predict(first)
-    # poem = index_to_chinese(result)
-    # print(poem)
+    init = Init(50)
     init.train(300)
-    # init=Init(994)
-    # init.predict()

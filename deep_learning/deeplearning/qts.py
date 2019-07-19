@@ -3,11 +3,10 @@ import numpy as np
 import math
 import threading
 
-from PIL import Image,ImageDraw
+from PIL import Image, ImageDraw
 from my_lstm import MyLSTM
 from my_multi_lstm import MyMultiLSTM
 from qts_util import read_poems, VOCAB_SIZE, chinese_to_index, index_to_chinese
-
 
 STATE_SIZE = 200
 OUTPUT_SIZE = 200
@@ -63,7 +62,7 @@ class Tensors:
                 loss += tf.nn.sparse_softmax_cross_entropy_with_logits(logits=predict, labels=today)
                 tf.get_variable_scope().reuse_variables()
 
-        loss = tf.reduce_mean(loss/REPEATS)
+        loss = tf.reduce_mean(loss / REPEATS)
         tf.summary.scalar('my_rnn_loss', loss)
 
         lr = tf.get_variable(name='lr', shape=[], trainable=False)
@@ -77,7 +76,7 @@ class Tensors:
         self.loss = loss
 
         self.lr = lr
-        self.summary=tf.summary.merge_all()
+        self.summary = tf.summary.merge_all()
 
 
 class Init:
@@ -115,13 +114,13 @@ class Init:
         total = samples.num
 
         tensors = self.tensors
-        file_writer=tf.summary.FileWriter('logqts',graph=self.graph)
-        step=0
+        file_writer = tf.summary.FileWriter('logqts', graph=self.graph)
+        step = 0
         for i in range(epoches):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x, _y = samples.get_samples(batch_size)
                 feed_dict = {}
-                temp = np.transpose(_x)   # _x.shape = [batch_size, 32]
+                temp = np.transpose(_x)  # _x.shape = [batch_size, 32]
                 if len(temp[0]) != 100:
                     print('======= temp: %d * %d' % (len(temp), len(temp[0])))
                 for x_input, x_value in zip(tensors.x_inputs, temp):
@@ -136,12 +135,12 @@ class Init:
                     feed_dict[y_today] = [e for e in y_value]
                     if len(y_value) != 100:
                         print('len y_value: %d !' % len(y_value), flush=True)
-                _, loss,summary = session.run([tensors.minimize, tensors.loss,tensors.summary],
-                                              feed_dict=feed_dict)
+                _, loss, summary = session.run([tensors.minimize, tensors.loss, tensors.summary],
+                                               feed_dict=feed_dict)
                 # session.run(self.assign, feed_dict={self.lr: 0.0001})
-                step+=1
+                step += 1
 
-                file_writer.add_summary(summary,step)
+                file_writer.add_summary(summary, step)
                 # if loss < 0.4:
                 #     lr = 0.0001
                 # else:
@@ -164,7 +163,7 @@ class Init:
         }
 
         for i in range(1, REPEATS):
-            predicts = self.session.run(tensors.y_predict[i-1], feed_dict)
+            predicts = self.session.run(tensors.y_predict[i - 1], feed_dict)
             result.append(predicts[0])
             feed_dict[tensors.x_inputs[i]] = predicts
 
@@ -205,7 +204,7 @@ class Samples:
         return x, y
 
 
-class MyThread (threading.Thread):
+class MyThread(threading.Thread):
     def __init__(self):
         super(MyThread, self).__init__()
 
@@ -234,7 +233,7 @@ if __name__ == '__main__':
     # samples = get_samples()
     # print(samples[:10])
 
-    init=Init(100)
+    init = Init(100)
     # first = chinese_to_index('海')[0]
     # result = init.predict(first)
     # poem = index_to_chinese(result)

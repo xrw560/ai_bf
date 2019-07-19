@@ -1,13 +1,12 @@
+# -*- coding:utf-8-*-
+"""
+seq2seq
+"""
+
 import tensorflow as tf
 import numpy as np
-import math
-import threading
-
-from PIL import Image,ImageDraw
 from my_lstm import MyLSTM
-from my_multi_lstm import MyMultiLSTM
-from qts_util import read_poems, VOCAB_SIZE, chinese_to_index, index_to_chinese
-
+from qts_util import read_poems, VOCAB_SIZE
 
 STATE_SIZE = 200
 OUTPUT_SIZE = 200
@@ -56,30 +55,32 @@ class Tensors:
 
         with tf.variable_scope('decoder'):
             output = decoder.zero_output(batch_size)
-            input = tf.constant(output)                 # input = state
-                                                        # state = decoder.zero_state(batch_size)
+            input = tf.constant(output)
+            # input = state
+            # state = decoder.zero_state(batch_size)
             for i in range(OUTPUT_REPEATS):
-                today = tf.placeholder(dtype=tf.int32, shape=[None])
+                today = tf.placeholder(dtype=tf.int32, shape=[None])  # 标签值(整数)
                 todays.append(today)
                 output, state = decoder(input, output, state)
-                outputs.append(output)
+                outputs.append(output)  # 预测输出
 
         predicts = []
         with tf.variable_scope('loss'):
-            sentence_loss = []
+            sentence_loss = []  # 每句话的loss
             for today, output in zip(todays, outputs):
                 predict = _my_fc(output, VOCAB_SIZE, name='loss_fc')
                 predicts.append(tf.argmax(tf.nn.softmax(predict), axis=1))
                 single_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=predict, labels=today)
 
-                # p1 = tf.one_hot(today, VOCAB_SIZE)
-                # p2 = tf.nn.softmax(predict)
+                # # 拆解 sparse_softmax_cross_entropy_with_logits
+                # p1 = tf.one_hot(today, VOCAB_SIZE) # batch_size*8200， 标签，8200个中只有一个1个为1
+                # p2 = tf.nn.softmax(predict) # 8200个概率
                 # single_loss = tf.reduce_sum(-p1 * tf.log(p2), axis=1)
 
                 sentence_loss.append(single_loss)
                 tf.get_variable_scope().reuse_variables()
 
-        loss = tf.reduce_mean(sentence_loss)
+        loss = tf.reduce_mean(sentence_loss)  # 总loss
         tf.summary.scalar('my_rnn_loss', loss)
 
         lr = tf.get_variable(name='lr', shape=[], trainable=False)
@@ -93,7 +94,7 @@ class Tensors:
         self.loss = loss
 
         self.lr = lr
-        self.summary=tf.summary.merge_all()
+        self.summary = tf.summary.merge_all()
 
 
 class Init:
@@ -131,13 +132,13 @@ class Init:
         total = samples.num
 
         tensors = self.tensors
-        file_writer=tf.summary.FileWriter('log18',graph=self.graph)
-        step=0
+        file_writer = tf.summary.FileWriter('log18', graph=self.graph)
+        step = 0
         for i in range(epoches):
-            for j in range(int(total/batch_size)):
+            for j in range(int(total / batch_size)):
                 _x, _y = samples.get_samples(batch_size)
                 feed_dict = {}
-                temp = np.transpose(_x)   # _x.shape = [batch_size, 32]
+                temp = np.transpose(_x)  # _x.shape = [batch_size, 32]
                 for x_input, x_value in zip(tensors.x_inputs, temp):
                     feed_dict[x_input] = [e for e in x_value]
                     # if len(x_value) != 100:
@@ -148,12 +149,12 @@ class Init:
                 temp = np.transpose(_y)
                 for y_today, y_value in zip(tensors.y_todays, temp):
                     feed_dict[y_today] = [e for e in y_value]
-                _, loss,summary = session.run([tensors.minimize, tensors.loss,tensors.summary],
-                                              feed_dict=feed_dict)
+                _, loss, summary = session.run([tensors.minimize, tensors.loss, tensors.summary],
+                                               feed_dict=feed_dict)
                 # session.run(self.assign, feed_dict={self.lr: 0.0001})
-                step+=1
+                step += 1
 
-                file_writer.add_summary(summary,step)
+                file_writer.add_summary(summary, step)
                 # if loss < 0.4:
                 #     lr = 0.0001
                 # else:
@@ -167,20 +168,6 @@ class Init:
 
         self.saver.save(session, SAVE_PATH)
         print('Finish!', flush=True)
-
-    def predict(self, first_index):
-        result = [first_index]
-        tensors = self.tensors
-        feed_dict = {
-            tensors.x_inputs[0]: [first_index] * self.batch_size
-        }
-
-        for i in range(1, REPEATS):
-            predicts = self.session.run(tensors.y_predict[i-1], feed_dict)
-            result.append(predicts[0])
-            feed_dict[tensors.x_inputs[i]] = predicts
-
-        return result
 
 
 def get_samples():
@@ -217,40 +204,7 @@ class Samples:
         return x, y
 
 
-class MyThread (threading.Thread):
-    def __init__(self):
-        super(MyThread, self).__init__()
-
-    def run(self):
-        with Init() as init:
-            init.predict()
-
-
-def do_test():
-    with Init() as init:
-        init.train(5000)
-
-    th = []
-    for _ in range(1):
-        t = MyThread()
-        th.append(t)
-        t.start()
-
-    for t in th:
-        t.join()
-
-    print('main thread is finished.')
-
-
 if __name__ == '__main__':
-    # samples = get_samples()
-    # print(samples[:10])
-
-    init=Init(50)
-    # first = chinese_to_index('海')[0]
-    # result = init.predict(first)
-    # poem = index_to_chinese(result)
-    # print(poem)
+    init = Init(50)
     init.train(300)
-    # init=Init(994)
-    # init.predict()
+
