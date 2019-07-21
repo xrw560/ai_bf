@@ -19,6 +19,13 @@ def _my_fc(input, output_neurals, name):
 
 class Tensors:
     def resnet_bottleneck_block(self, x, std_filters, resize=False):
+        """
+        bottleneck: 每个block包含三个层次
+        @param x:
+        @param std_filters: 标准filter
+        @param resize: 通道数是否需要改变
+        @return:
+        """
         y = tf.layers.conv2d(x, std_filters, kernel_size=1, padding='same', strides=2 if resize else 1)
         y = tf.layers.batch_normalization(y, axis=0, training=self.training)
         y = tf.nn.relu(y)
@@ -42,29 +49,29 @@ class Tensors:
         self.training = tf.placeholder(tf.bool, name='training')
         x = tf.layers.batch_normalization(x, axis=0, training=self.training)
         x = tf.nn.relu(x)
-        x = tf.layers.max_pooling2d(pool_size=3, strides=2, padding='same')     # ==> 56*56*64
+        x = tf.layers.max_pooling2d(pool_size=3, strides=2, padding='same')  # ==> 56*56*64
 
         x = self.resnet_bottleneck_block(x, 64, False)
         x = self.resnet_bottleneck_block(x, 64, False)
         x = self.resnet_bottleneck_block(x, 64, False)
 
-        x = self.resnet_bottleneck_block(x, 128, True)      # ==> 28 * 28 * 512
+        x = self.resnet_bottleneck_block(x, 128, True)  # ==> 28 * 28 * 512
         x = self.resnet_bottleneck_block(x, 128, False)
         x = self.resnet_bottleneck_block(x, 128, False)
         x = self.resnet_bottleneck_block(x, 128, False)
 
-        x = self.resnet_bottleneck_block(x, 256, True)      # ==> 14 * 14 * 1024
+        x = self.resnet_bottleneck_block(x, 256, True)  # ==> 14 * 14 * 1024
         x = self.resnet_bottleneck_block(x, 256, False)
         x = self.resnet_bottleneck_block(x, 256, False)
         x = self.resnet_bottleneck_block(x, 256, False)
         x = self.resnet_bottleneck_block(x, 256, False)
         x = self.resnet_bottleneck_block(x, 256, False)
 
-        x = self.resnet_bottleneck_block(x, 512, True)      # ==> 7 * 7 * 2048
+        x = self.resnet_bottleneck_block(x, 512, True)  # ==> 7 * 7 * 2048
         x = self.resnet_bottleneck_block(x, 512, False)
         x = self.resnet_bottleneck_block(x, 512, False)
 
-        x = tf.layers.average_pooling2d(x, 7, 1)            # ==> 1 * 1 * 2048
+        x = tf.layers.average_pooling2d(x, 7, 1)  # ==> 1 * 1 * 2048
         x = tf.reshape(x, [-1, 2048])
         x = _my_fc(x, 1000)
 
@@ -108,8 +115,6 @@ if __name__ == '__main__':
     #
     # print(np.sum(b, axis=0))      # expect to get eight 0's.
     # print(np.sum(b**2, axis=0))   # expect to get eight 100's.
-
-
 
     # a = tf.constant(30)
     # x = tf.get_variable('x', initializer=10)
