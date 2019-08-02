@@ -160,5 +160,5 @@ ENV/
 model/
 
 
-model*
+# model*
 *.jpg
