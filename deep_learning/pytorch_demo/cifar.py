@@ -57,7 +57,7 @@ parser.add_argument('-c', '--checkpoint', default='checkpoint', type=str, metava
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 # Architecture
-parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet',
+parser.add_argument('-a', '--arch', metavar='ARCH', default='resnext',
                     choices=model_names,
                     help='model architecture: ' +
                          ' | '.join(model_names) +
@@ -215,9 +215,9 @@ def main():
         # save model
         is_best = test_acc > best_acc
         best_acc = max(test_acc, best_acc)
-        save_checkpoint({'epoch': epoch + 1, 'state_dict': \
-            model.state_dict(), 'acc': test_acc, 'best_acc': best_acc, \
-                         'optimizer': optimizer.state_dict(), }, is_best, \
+        save_checkpoint({'epoch': epoch + 1, 'state_dict':
+            model.state_dict(), 'acc': test_acc, 'best_acc': best_acc,
+                         'optimizer': optimizer.state_dict(), }, is_best,
                         checkpoint=args.checkpoint)
 
     logger.close()
